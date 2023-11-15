@@ -1,0 +1,55 @@
+version: '3'
+services:
+  interview-app:
+    build:
+      context: .
+      dockerfile: ./docker/app.dockerfile
+    container_name: interview-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: interview
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - interview-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  interview-nginx:
+    image: nginx:alpine
+    container_name: interview-api-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - interview-network
+  interview-mysql:
+    image: mysql:8.0
+    container_name: interview-mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: interview
+      MYSQL_ROOT_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - interview-network
+networks:
+  interview-network:
+    driver: bridge
+volumes:
+  dbdata:
+    driver: local
