@@ -7,6 +7,7 @@ start:
 	# start
 	sudo docker-compose up --remove-orphans -d
 	sudo docker-compose exec interview-app composer install
+	sudo docker-compose exec interview-app php artisan key:generate
 	sudo docker-compose exec interview-app php artisan migrate
 stop:
 	sudo docker-compose stop
